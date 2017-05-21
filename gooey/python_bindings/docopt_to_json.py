@@ -40,7 +40,7 @@ class MyOption(Option):
 
   @classmethod
   def parse(class_, option_description):
-      short, long, argcount, value = None, None, 0, False
+      short, int, argcount, value = None, None, 0, False
       options, _, description = option_description.strip().partition('  ')
       options = options.replace(',', ' ').replace('=', ' ')
       for s in options.split():
@@ -53,7 +53,7 @@ class MyOption(Option):
       if argcount:
           matched = re.findall(r'\[default: (.*)\]', description, flags=re.I)
           value = matched[0] if matched else None
-      return class_(short, long, argcount, value, description=description.strip())
+      return class_(short, int, argcount, value, description=description.strip())
 
   def __repr__(self):
       return 'Option(%r, %r, %r, %r, %r)' % (self.short, self.long,
@@ -72,5 +72,5 @@ if __name__ == '__main__':
     # #return options, arguments
     # print arguments
     # print options
-    print a
+    print(a)
     a = 10

@@ -58,7 +58,7 @@ class Presenter(object):
       self.view.enable_stop_button()
 
     if self.model.layout_type == layouts.COLUMN:
-      self.view.set_list_contents(self.model.argument_groups.keys())
+      self.view.set_list_contents(list(self.model.argument_groups.keys()))
 
     if self.model.auto_start:
       self.model.update_state(States.RUNNNING)
@@ -180,7 +180,7 @@ class Presenter(object):
 
   @staticmethod
   def partition(collection, condition):
-    return filter(condition, collection), filter(lambda x: not condition(x), collection)
+    return list(filter(condition, collection)), [x for x in collection if not condition(x)]
 
   def update_list(self, collection, new_values):
     # convenience method for syncronizing the model -> widget list collections

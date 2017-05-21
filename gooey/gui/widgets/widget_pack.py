@@ -9,12 +9,11 @@ from gooey.gui.util.filedrop import FileDrop
 from gooey.gui.widgets.calender_dialog import CalendarDlg
 
 
-class WidgetPack(object):
+class WidgetPack(object, metaclass=ABCMeta):
   """
   Interface specifying the contract to which
   all `WidgetPack`s will adhere
   """
-  __metaclass__ = ABCMeta
 
   @abstractmethod
   def build(self, parent, data, choices=None):
@@ -184,7 +183,7 @@ class CounterPayload(WidgetPack):
       parent=parent,
       id=-1,
       value='',
-      choices=map(str, range(1, 11)),
+      choices=list(map(str, list(range(1, 11)))),
       style=wx.CB_DROPDOWN
     )
     return self.widget

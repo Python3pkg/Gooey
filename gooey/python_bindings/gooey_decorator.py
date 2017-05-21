@@ -14,6 +14,7 @@ from argparse import ArgumentParser
 from gooey.gui import application
 from gooey.gui.util.freeze import get_resource_path
 from . import config_generator
+import collections
 
 IGNORE_COMMAND = '--ignore-gooey'
 
@@ -51,8 +52,8 @@ def Gooey(f=None,
       if load_build_config:
         try:
           build_spec = json.load(open(load_build_config, "r"))
-        except Exception, e:
-          print( 'Exception loading Build Config from {0}: {1}'.format(load_build_config, e))
+        except Exception as e:
+          print(( 'Exception loading Build Config from {0}: {1}'.format(load_build_config, e)))
           sys.exit(1)
 
       if not build_spec:
@@ -60,7 +61,7 @@ def Gooey(f=None,
 
       if dump_build_config:
         config_path = os.path.join(os.getcwd(), 'gooey_config.json')
-        print 'Writing Build Config to: {}'.format(config_path)
+        print('Writing Build Config to: {}'.format(config_path))
         with open(config_path, 'w') as f:
           f.write(json.dumps(build_spec, indent=2))
       application.run(build_spec)
@@ -78,11 +79,11 @@ def Gooey(f=None,
 
   if IGNORE_COMMAND in sys.argv:
     sys.argv.remove(IGNORE_COMMAND)
-    if callable(f):
+    if isinstance(f, collections.Callable):
       return run_without_gooey(f)
     return run_without_gooey
 
-  if callable(f):
+  if isinstance(f, collections.Callable):
     return build(f)
   return build
 

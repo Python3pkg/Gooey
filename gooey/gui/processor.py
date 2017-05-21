@@ -82,7 +82,7 @@ class ProcessController(object):
     '''
     Runs the user-supplied progress calculation rule
     '''
-    _locals = {k: safe_float(v) for k, v in match.groupdict().items()}
+    _locals = {k: safe_float(v) for k, v in list(match.groupdict().items())}
     if "x" not in _locals:
       _locals["x"] = [safe_float(x) for x in match.groups()]
     try:

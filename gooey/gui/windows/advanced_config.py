@@ -61,7 +61,7 @@ class WidgetContainer(wx.Panel):
   def create_component_grid(self, parent_sizer, components, cols=2):
     for row in self.chunk(components, cols):
       hsizer = wx.BoxSizer(wx.HORIZONTAL)
-      for widget in filter(None, row):
+      for widget in [_f for _f in row if _f]:
         hsizer.Add(widget.panel, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
       parent_sizer.Add(hsizer, 0, wx.EXPAND)
       parent_sizer.AddSpacer(20)

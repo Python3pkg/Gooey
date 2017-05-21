@@ -18,6 +18,7 @@ from functools import partial
 from itertools import chain
 
 import sys
+import collections
 
 VALID_WIDGETS = (
   'FileChooser',
@@ -63,7 +64,7 @@ def convert(parser):
       (choose_name(name, sub_parser), {
         'command': name.lower(),
         'contents': process(sub_parser, getattr(sub_parser, 'widgets', {}))
-      }) for name, sub_parser in get_subparser(actions).choices.iteritems())
+      }) for name, sub_parser in get_subparser(actions).choices.items())
 
   else:
     layout_type = 'standard'
@@ -91,12 +92,12 @@ def process(parser, widget_dict):
                   if action not in group_options
                   and action.dest != 'help']
 
-  required_actions = filter(is_required, base_actions)
-  optional_actions = filter(is_optional, base_actions)
+  required_actions = list(filter(is_required, base_actions))
+  optional_actions = list(filter(is_optional, base_actions))
 
   return list(categorize(required_actions, widget_dict, required=True)) + \
          list(categorize(optional_actions, widget_dict)) + \
-         map(build_radio_group, mutually_exclusive_groups)
+         list(map(build_radio_group, mutually_exclusive_groups))
 
 def categorize(actions, widget_dict, required=False):
   _get_widget = partial(get_widget, widgets=widget_dict)
@@ -110,7 +111,7 @@ def categorize(actions, widget_dict, required=False):
     elif is_counter(action):
       _json = as_json(action, _get_widget(action) or 'Counter', required)
       # pre-fill the 'counter' dropdown
-      _json['data']['choices'] = map(str, range(1, 11))
+      _json['data']['choices'] = list(map(str, list(range(1, 11))))
       yield _json
     else:
       raise UnknownWidgetType(action)
@@ -125,13 +126,13 @@ def is_required(action):
   return not action.option_strings and not isinstance(action, _SubParsersAction) or action.required == True
 
 def has_required(actions):
-  return filter(None, filter(is_required, actions))
+  return [_f for _f in list(filter(is_required, actions)) if _f]
 
 def is_subparser(action):
   return isinstance(action,_SubParsersAction)
 
 def has_subparsers(actions):
-    return filter(is_subparser, actions)
+    return list(filter(is_subparser, actions))
 
 def get_subparser(actions):
     return filter(is_subparser, actions)[0]
@@ -161,7 +162,7 @@ def is_standard(action):
 def is_flag(action):
   """ _actions which are either storeconst, store_bool, etc.. """
   action_types = [_StoreTrueAction, _StoreFalseAction, _StoreConstAction]
-  return any(map(lambda Action: isinstance(action, Action), action_types))
+  return any([isinstance(action, Action) for Action in action_types])
 
 def is_counter(action):
   """ _actions which are of type _CountAction """
@@ -222,7 +223,7 @@ def clean_default(widget_type, default):
   `default` parameter in Argparse cause errors in Gooey.
   '''
   if widget_type != 'CheckBox':
-    return default.__name__ if callable(default) else default
+    return default.__name__ if isinstance(default, collections.Callable) else default
   # checkboxes must be handled differently, as they
   # must be forced down to a boolean value
   return default if isinstance(default, bool) else False

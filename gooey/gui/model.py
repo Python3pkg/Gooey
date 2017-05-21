@@ -35,7 +35,7 @@ class MyWidget(object):
     if self.type == 'MultiFileChooser':
       value = ' '.join(quote(x) for x in self._value.split(os.pathsep) if x)
       if self.commands and value:
-        return u'{} {}'.format(self.commands[0], value)
+        return '{} {}'.format(self.commands[0], value)
       return value or None
     if self.type == 'Textarea':
       if self.commands and self._value:
@@ -44,7 +44,7 @@ class MyWidget(object):
         return quote(self._value.encode('unicode_escape')) if self._value else ''
     if self.type == 'CommandField':
       if self.commands and self._value:
-        return u'{} {}'.format(self.commands[0], self._value)
+        return '{} {}'.format(self.commands[0], self._value)
       else:
         return self._value or None
 
@@ -65,7 +65,7 @@ class MyWidget(object):
       if self._value == 'Select Option':
         return None
       elif self.commands and self._value:
-        return u'{} {}'.format(self.commands[0], quote(self._value))
+        return '{} {}'.format(self.commands[0], quote(self._value))
       else:
         return quote(self._value) if self._value else ''
     else:
@@ -74,7 +74,7 @@ class MyWidget(object):
           v = quote(self._value)
         else:
           v = self._value
-        return u'{0} {1}'.format(self.commands[0], v)
+        return '{0} {1}'.format(self.commands[0], v)
       else:
         if not self._value:
           return None
@@ -127,7 +127,7 @@ class MyModel(object):
 
   def wrap(self, groups):
     output = OrderedDict()
-    for name, group in groups.items():
+    for name, group in list(groups.items()):
       output[name] = ArgumentGroup(
         name,
         group['command'],
@@ -158,7 +158,7 @@ class MyModel(object):
     self.stop_button_disabled = self.build_spec['disable_stop_button']
 
     self.argument_groups = self.wrap(self.build_spec.get('widgets', {}))
-    self.active_group = iter(self.argument_groups).next()
+    self.active_group = next(iter(self.argument_groups))
 
     self.num_required_cols = self.build_spec['num_required_cols']
     self.num_optional_cols = self.build_spec['num_optional_cols']
@@ -207,7 +207,7 @@ class MyModel(object):
     return self.build_spec['manual_start']
 
   def is_required_section_complete(self):
-    completed_values = filter(None, [arg.value for arg in self.required_args])
+    completed_values = [_f for _f in [arg.value for arg in self.required_args] if _f]
     return len(self.required_args) == len(completed_values)
 
   def build_command_line_string(self):
@@ -216,10 +216,10 @@ class MyModel(object):
     position_args = [c.value for c in self.required_args if not c.commands]
     if position_args:
       position_args.insert(0, "--")
-    cmd_string = ' '.join(filter(None, chain(required_args, optional_args, position_args)))
+    cmd_string = ' '.join([_f for _f in chain(required_args, optional_args, position_args) if _f])
     if self.layout_type == 'column':
-      cmd_string = u'{} {}'.format(self.argument_groups[self.active_group].command, cmd_string)
-    return u'{} --ignore-gooey {}'.format(self.build_spec['target'], cmd_string)
+      cmd_string = '{} {}'.format(self.argument_groups[self.active_group].command, cmd_string)
+    return '{} --ignore-gooey {}'.format(self.build_spec['target'], cmd_string)
 
   def group_arguments(self, widget_list):
     is_required = lambda widget: widget['required']
@@ -228,11 +228,11 @@ class MyModel(object):
     required_args, optional_args  = self.partition(widget_list, is_required)
     if self.build_spec['group_by_type']:
       optional_args = chain(*self.partition(optional_args, not_checkbox))
-    return map(self.to_object, required_args), map(self.to_object, optional_args)
+    return list(map(self.to_object, required_args)), list(map(self.to_object, optional_args))
 
   @staticmethod
   def partition(collection, condition):
-    return filter(condition, collection), filter(lambda x: not condition(x), collection)
+    return list(filter(condition, collection)), [x for x in collection if not condition(x)]
 
   def to_object(self, data):
     details = data['data']
